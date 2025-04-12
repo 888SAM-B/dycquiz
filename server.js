@@ -5,11 +5,26 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const bodyParser = require("body-parser");
 const jwt = require("jsonwebtoken");
+const express = require('express');
+const router = express.Router();
+const QuestionModel = require('../models/QuestionModel');
 require('dotenv').config();
+
+app.delete('/python/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    await QuestionModel.findByIdAndDelete(id);
+    res.sendStatus(204);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete question' });
+  }
+});
 
 // Middleware
 app.use(express.json());
 app.use(cors());
+app.use('/python', router);
+
 
 // Connect to MongoDB
 mongoose.connect("mongodb+srv://dycquiz:dycquiz@quiz.zrkvrmd.mongodb.net/quiz", {
@@ -30,6 +45,7 @@ const userSchema = new mongoose.Schema({
   completedcourses: { type: Array },
   selectedcourses: { type: Array },
 });
+
 
 // Sample test
 let pythontest = [
