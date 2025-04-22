@@ -38,31 +38,6 @@ const userSchema = new mongoose.Schema({
   theme:{type:String,default:"light-mode"}
 });
 
-
-// Sample test
-let pythontest = [
-      {
-      "question": "What does `mylist[::-1]` do?",
-      "options": [
-        "Returns a reversed copy of the list",
-        "Reverses the list in place",
-        "Sorts the list in descending order",
-        "Returns every other element of the list"
-      ],
-      "answer": 0
-      },
-      {
-      "question": "Which of the following is true about Python's GIL (Global Interpreter Lock)?",
-      "options": [
-        "It allows multiple threads to execute Python bytecode simultaneously",
-        "It prevents multiple threads from executing Python bytecode simultaneously",
-        "It optimizes memory usage in multiprocessing applications",
-        "It is a lock used in Python's garbage collection"
-      ],
-      "answer": 1
-      }
-    ];
-
 // Hash password before saving
 userSchema.pre('save', async function (next) {
   if (this.isModified('password')) {
@@ -72,6 +47,34 @@ userSchema.pre('save', async function (next) {
 });
 
 const User = mongoose.model("User", userSchema);
+
+
+const quizDB = mongoose.createConnection("mongodb+srv://dycquiz:dycquiz@quiz.zrkvrmd.mongodb.net/quizquestions", {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+
+quizDB.on("connected", () => {
+  console.log("Connected to quizquestions DB");
+});
+
+quizDB.on("error", (err) => {
+  console.error("quizquestions DB connection error:", err);
+});
+
+const quizSchema = new mongoose.Schema({
+  code: { type: String, required: true },
+  name: { type: String, required: true },
+  author: { type: String, required: true },
+  quiz: { type: Array, required: true }
+});
+const QuizModel = quizDB.model("Quiz", quizSchema);
+console.log("QuizModel created successfully", QuizModel);
+// Sample quiz data
+
+
+
+
 
 // JWT Authentication Middleware
 const authenticateToken = (req, res, next) => {
@@ -213,7 +216,7 @@ app.post('/python', authenticateToken, (req, res) => {
 
     user.completedcourses.push(newQuestion);
     user.save();
-    pythontest.push(newQuestion);
+    
 
     console.log("Question added:", newQuestion);
     res.status(201).json({ message: "Question added successfully", question: newQuestion });
@@ -283,6 +286,76 @@ app.post('/edit_item', authenticateToken, async (req, res) => {
   }
 });
 
+const generateRandomCode = async () => {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+
+  while (true) {
+    let code = '';
+    for (let i = 0; i < 5; i++) {
+      code += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+
+    const existingCode = await QuizModel.findOne({ code });
+    if (!existingCode) {
+      return code;
+    }
+    // else loop continues to generate new one
+  }
+};
+
+app.post('/export', authenticateToken, async (req, res) => {
+  try {
+    const data = req.body;
+    console.log("Exporting data:", data);
+
+    const code = await generateRandomCode();
+
+    const sampleQuiz = new QuizModel({
+      code,
+      name: req.user.username,
+      author: req.user.username,
+      quiz: data
+    });
+
+    await sampleQuiz.save();
+    console.log("Sample quiz inserted successfully");
+    res.status(201).json({ message: "Quiz created", code });
+  } catch (err) {
+    console.error("Error inserting sample quiz:", err.message);
+    res.status(500).json({ message: "Failed to export quiz" });
+  }
+});
+
+
+app.get('/get-code', authenticateToken, async (req, res) => {
+  try {
+    // Fetch the latest quiz created by the logged-in user (or customize as needed)
+    const quiz = await QuizModel.findOne({ author: req.user.username }).sort({ _id: -1 });
+
+    if (!quiz) {
+      return res.status(404).json({ message: "No quiz found for this user" });
+    }
+
+    res.status(200).json({ code: quiz.code });
+  } catch (err) {
+    console.error("Error fetching code:", err.message);
+    res.status(500).json({ message: "Failed to get quiz code" });
+  }
+});
+
+
+
+
+app.get('/import/:code', authenticateToken, async (req, res) => {
+  const { code } = req.params;
+  try {
+    const quiz = await QuizModel.findOne({ code });
+    if (!quiz) return res.status(404).json({ message: "Quiz not found" });
+    res.status(200).json({ quiz: quiz.quiz }); // only send quiz array
+  } catch (err) {
+    res.status(500).json({ message: "Failed to import quiz" });
+  }
+});
 
 
 // Start the server
