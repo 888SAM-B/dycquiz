@@ -107,7 +107,7 @@ app.post("/register", async (req, res) => {
     }
 
     const newUser = new User({ firstname, lastname, username, password });
-    newUser.completedcourses = [...pythontest];
+    
     await newUser.save();
 
     res.status(201).json({ message: "User registered successfully!" });
@@ -225,11 +225,11 @@ app.post('/python', authenticateToken, (req, res) => {
 
 
 
-app.get('/remove_item', authenticateToken, async (req, res) => {
+app.post('/remove_item', authenticateToken, async (req, res) => {
   console.log("Ulla vanthuttean");
 
-  const id = req.query.id; // Use query param, not body
-  console.log("ID:", id);
+  const index = req.body.cid; // index of the course to be removed
+  console.log("Index to remove:", index);
 
   try {
     const user = await User.findById(req.user.id);
@@ -237,15 +237,49 @@ app.get('/remove_item', authenticateToken, async (req, res) => {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    // Remove the course with id from completedcourses
-    console.log(user.completedcourses[id])
-    user.completedcourses.pop(id); // Assuming id is the index of the course to remove
+    if (index < 0 || index >= user.completedcourses.length) {
+      return res.status(400).json({ message: "Invalid index" });
+    }
+
+    user.completedcourses.splice(index, 1); // removes 1 item at the specified index
     await user.save();
-    console.log(user.completedcourses);
+
+    console.log("Updated completedcourses:", user.completedcourses);
     res.status(200).json({ message: "Item removed successfully" });
   } catch (err) {
     console.error("Error removing item:", err);
     res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+
+app.post('/edit_item', authenticateToken, async (req, res) => {
+  console.log("Edit ku ulla vanthuttean da");
+
+  const { itemId, updateValue } = req.body;
+  console.log("Item ID:", itemId);
+  console.log("Update Value:", updateValue);
+  if (!itemId || !updateValue) {
+    return res.status(400).json({ message: "Missing itemId or updateValue" });
+  }
+
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    console.log("before update :",user.completedcourses[itemId]);
+    user.completedcourses[itemId]=updateValue;
+    user.save();
+    console.log("after update :",user.completedcourses[itemId]);
+    console.log(`Updating item with ID: ${itemId}, New Value: ${updateValue}`);
+
+    // Respond back
+    res.status(200).json({ message: "Item updated successfully" });
+
+  } catch (err) {
+    console.error("Error updating item:", err);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
