@@ -305,26 +305,37 @@ const generateRandomCode = async () => {
 
 app.post('/export', authenticateToken, async (req, res) => {
   try {
-    const data = req.body;
-    console.log("Exporting data:", data);
+    const { questions, testName } = req.body;
+    console.log("Request Body:", req.body);
 
     const code = await generateRandomCode();
+    console.log("Generated code:", code);
+
+    if (!testName || !questions || !Array.isArray(questions)) {
+      return res.status(400).json({ message: "Invalid payload" });
+    }
+
+    if (!req.user?.username) {
+      return res.status(403).json({ message: "User not authenticated properly" });
+    }
 
     const sampleQuiz = new QuizModel({
       code,
-      name: req.user.username,
+      name: testName,
       author: req.user.username,
-      quiz: data
+      quiz: questions,
     });
 
     await sampleQuiz.save();
     console.log("Sample quiz inserted successfully");
+
     res.status(201).json({ message: "Quiz created", code });
   } catch (err) {
     console.error("Error inserting sample quiz:", err.message);
     res.status(500).json({ message: "Failed to export quiz" });
   }
 });
+
 
 
 app.get('/get-code', authenticateToken, async (req, res) => {
@@ -344,6 +355,35 @@ app.get('/get-code', authenticateToken, async (req, res) => {
 });
 
 
+
+app.get('/getInfo', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);  
+    if (!user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    res.status(200).json({ firstname: user.firstname });
+  } catch (err) {
+    console.error("Error fetching user info:", err.message);
+    res.status(500).json({ message: "Failed to get user info" });
+  }
+}
+);
+
+
+
+app.get('/getTests', authenticateToken, async (req, res) => {
+  try {
+    const tests = await QuizModel.find({ author: req.user.username });
+    if (!tests || tests.length === 0) {
+      return res.status(404).json({ message: "No tests found for this user" });
+    }
+    res.status(200).json({ tests });
+  } catch (err) {
+    console.error("Error fetching tests:", err.message);
+    res.status(500).json({ message: "Failed to fetch tests" });
+  }
+});
 
 
 app.get('/import/:code', authenticateToken, async (req, res) => {
