@@ -33,6 +33,7 @@ const userSchema = new mongoose.Schema({
   lastname: { type: String, required: true },
   username: { type: String, required: true, unique: true },
   password: { type: String, required: true },
+  title: { type: String, default: "" },
   completedcourses: { type: Array },
   selectedcourses: { type: Array },
   theme:{type:String,default:"light-mode"}
@@ -188,7 +189,11 @@ app.get('/python', authenticateToken, (req, res) => {
     if (!user) {
       return res.status(401).json({ message: "Unauthorized" });
     }
-    res.json(user.completedcourses);
+    res.json({
+      completedcourses: user.completedcourses,
+      title: user.title
+    });
+    console.log("title:", user.title);
   }).catch(err => {
     console.error("Error fetching questions:", err);
     res.status(500).json({ message: "Error fetching questions" });
@@ -259,10 +264,12 @@ app.post('/remove_item', authenticateToken, async (req, res) => {
 app.post('/edit_item', authenticateToken, async (req, res) => {
   console.log("Edit ku ulla vanthuttean da");
 
-  const { itemId, updateValue } = req.body;
+  const { itemId, updateValue, title1 } = req.body;
   console.log("Item ID:", itemId);
   console.log("Update Value:", updateValue);
-  if (!itemId || !updateValue) {
+  console.log("Title:", title1);
+
+  if (itemId==undefined || itemId==null || !updateValue || !title1) {
     return res.status(400).json({ message: "Missing itemId or updateValue" });
   }
 
@@ -271,18 +278,40 @@ app.post('/edit_item', authenticateToken, async (req, res) => {
     if (!user) {
       return res.status(401).json({ message: "Unauthorized" });
     }
-    console.log("before update :",user.completedcourses[itemId]);
-    user.completedcourses[itemId]=updateValue;
-    user.save();
-    console.log("after update :",user.completedcourses[itemId]);
-    console.log(`Updating item with ID: ${itemId}, New Value: ${updateValue}`);
 
-    // Respond back
-    res.status(200).json({ message: "Item updated successfully" });
+    console.log("before update:", user.completedcourses[itemId]);
+    user.completedcourses[itemId] = updateValue;
+    
+    await user.save();
+    console.log("after update:", user.completedcourses[itemId]);
+
+    return res.status(200).json({ message: "Item updated successfully" });
 
   } catch (err) {
     console.error("Error updating item:", err);
-    res.status(500).json({ message: "Server error" });
+    return res.status(500).json({ message: "Server error" });
+  }
+});
+
+app.post('/update-title', authenticateToken, async (req, res) => {
+  const { title } = req.body; 
+  console.log("Update title ku ulla vanthuttean da");
+  console.log("Title:", title);
+  if (!title) { 
+    return res.status(400).json({ message: "Title is required" });
+  }
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    user.title = title; // Update the title in the user document
+    await user.save();
+    console.log("Title updated successfully:", user.title);
+    res.status(200).json({ message: "Title updated successfully", title: user.title });
+  } catch (error) {
+    console.error("Error updating title:", error);
+    res.status(500).json({ message: "Error updating title" });
   }
 });
 
@@ -336,8 +365,21 @@ app.post('/export', authenticateToken, async (req, res) => {
   }
 });
 
+app.post('/delete-quiz', authenticateToken, async (req, res) => {
 
-
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    user.completedcourses = [];
+    user.title = ""; // Reset the title to an empty string
+    await user.save();
+  }catch (err) {
+    console.error("Error deleting quiz:", err.message);
+    return res.status(500).json({ message: "Failed to delete quiz" });
+  }
+}); 
 app.get('/get-code', authenticateToken, async (req, res) => {
   try {
     // Fetch the latest quiz created by the logged-in user (or customize as needed)
