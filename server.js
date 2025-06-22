@@ -67,7 +67,8 @@ const quizSchema = new mongoose.Schema({
   code: { type: String, required: true },
   name: { type: String, required: true },
   author: { type: String, required: true },
-  quiz: { type: Array, required: true }
+  quiz: { type: Array, required: true },
+  results: { type: Array, default: [] } // Store results of users who took the quiz
 });
 const QuizModel = quizDB.model("Quiz", quizSchema);
 console.log("QuizModel created successfully", QuizModel);
@@ -433,12 +434,52 @@ app.get('/import/:code', authenticateToken, async (req, res) => {
   try {
     const quiz = await QuizModel.findOne({ code });
     if (!quiz) return res.status(404).json({ message: "Quiz not found" });
-    res.status(200).json({ quiz: quiz.quiz }); // only send quiz array
+    
+    res.status(200).json({ quiz: quiz.quiz, quizName: quiz.name }); // only send quiz array
+    console.log("Quiz imported successfully:", quiz.name);
   } catch (err) {
     res.status(500).json({ message: "Failed to import quiz" });
   }
 });
 
+app.post('/submit-quiz', authenticateToken, async (req, res) => {
+  const { code, score, percentage } = req.body; // code of the quiz and user's answers
+  console.log("Code:", code);
+  console.log("Score:", score);
+  console.log("Percentage:", percentage);
+  try {
+    const quiz = await QuizModel.findOne({ code });
+    if (!quiz) return res.status(404).json({ message: "Quiz not found" });
 
+    quiz.results.push({
+      name: req.user.firstname+" " + req.user.lastname,
+      username: req.user.username,
+      score,
+      percentage,
+      date: new Date()
+    });
+
+    await quiz.save();
+
+    res.status(200).json({ message: "Quiz submitted successfully", score, percentage });
+  } catch (err) {
+    console.error("Error submitting quiz:", err.message);
+    res.status(500).json({ message: "Failed to submit quiz" });
+  }
+});
+
+app.get('/report', authenticateToken, async (req, res) => {
+  const { code } = req.query; // code of the quiz to fetch reports for
+  try {
+   console.log(code)
+    const quiz = await QuizModel.findOne({ code });
+    if (!quiz) return res.status(404).json({ message: "Quiz not found" });  
+    res.status(200).json({ results: quiz.results,name:quiz.name });
+    console.log("Report fetched successfully for code:", code);
+    console.log(quiz)
+  } catch (err) {
+    console.log("Error")
+  }
+});
 // Start the server
 app.listen(3002, () => console.log('API running on http://localhost:3002'));
