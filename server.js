@@ -69,6 +69,7 @@ const quizSchema = new mongoose.Schema({
   author: { type: String, required: true },
   quiz: { type: Array, required: true },
   results: { type: Array, default: [] } // Store results of users who took the quiz
+  ,totalQuestion:{type:Number,default:0}
 });
 const QuizModel = quizDB.model("Quiz", quizSchema);
 console.log("QuizModel created successfully", QuizModel);
@@ -335,9 +336,9 @@ const generateRandomCode = async () => {
 
 app.post('/export', authenticateToken, async (req, res) => {
   try {
-    const { questions, testName } = req.body;
+    const { questions, testName,totalQuestions } = req.body;
     console.log("Request Body:", req.body);
-
+    console.log("Total Check",totalQuestions)
     const code = await generateRandomCode();
     console.log("Generated code:", code);
 
@@ -348,13 +349,14 @@ app.post('/export', authenticateToken, async (req, res) => {
     if (!req.user?.username) {
       return res.status(403).json({ message: "User not authenticated properly" });
     }
-
     const sampleQuiz = new QuizModel({
+      totalQuestion:totalQuestions,
       code,
       name: testName,
       author: req.user.username,
       quiz: questions,
     });
+    console.log("SAMPLE DATA",sampleQuiz)
 
     await sampleQuiz.save();
     console.log("Sample quiz inserted successfully");
@@ -456,7 +458,8 @@ app.post('/submit-quiz', authenticateToken, async (req, res) => {
       username: req.user.username,
       score,
       percentage,
-      date: new Date()
+    date: new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })
+
     });
 
     await quiz.save();
@@ -474,7 +477,7 @@ app.get('/report', authenticateToken, async (req, res) => {
    console.log(code)
     const quiz = await QuizModel.findOne({ code });
     if (!quiz) return res.status(404).json({ message: "Quiz not found" });  
-    res.status(200).json({ results: quiz.results,name:quiz.name });
+    res.status(200).json({ results: quiz.results,name:quiz.name,totalQuestion:quiz.totalQuestion });
     console.log("Report fetched successfully for code:", code);
     console.log(quiz)
   } catch (err) {
