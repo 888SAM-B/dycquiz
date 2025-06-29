@@ -444,23 +444,41 @@ app.get('/import/:code', authenticateToken, async (req, res) => {
   }
 });
 
+
 app.post('/submit-quiz', authenticateToken, async (req, res) => {
-  const { code, score, percentage } = req.body; // code of the quiz and user's answers
+  const { code, score, percentage } = req.body;
   console.log("Code:", code);
   console.log("Score:", score);
   console.log("Percentage:", percentage);
+
   try {
     const quiz = await QuizModel.findOne({ code });
     if (!quiz) return res.status(404).json({ message: "Quiz not found" });
 
-    quiz.results.push({
-      name: req.user.firstname+" " + req.user.lastname,
+    const users = await User.findOne({ username: req.user.username });
+    console.log("User:", users);
+    if (!users) return res.status(401).json({ message: "Unauthorized" });
+
+    // Check if the user already submitted the quiz
+    const existingResultIndex = quiz.results.findIndex(
+      (result) => result.username === req.user.username
+    );
+
+    const updatedResult = {
+      name: users.firstname + " " + users.lastname,
       username: req.user.username,
       score,
       percentage,
-    date: new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })
+      date: new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })
+    };
 
-    });
+    if (existingResultIndex !== -1) {
+      // Update the existing result
+      quiz.results[existingResultIndex] = updatedResult;
+    } else {
+      // Add new result
+      quiz.results.push(updatedResult);
+    }
 
     await quiz.save();
 
