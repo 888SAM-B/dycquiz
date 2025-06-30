@@ -16,6 +16,12 @@ app.use(express.json());
 app.use(cors());
 app.use('/python', router);
 
+app.use(cors({
+  origin: '*', // OR restrict to your frontend URL
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 
 // Connect to MongoDB
 mongoose.connect("mongodb+srv://dycquiz:dycquiz@quiz.zrkvrmd.mongodb.net/quiz", {
