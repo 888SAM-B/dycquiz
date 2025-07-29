@@ -1,0 +1,71 @@
+.test-container {
+  margin-top: 3rem;
+}
+
+.test-card {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.test-input {
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 1px solid #ced4da;
+  width: 100%;
+  font-size: 1rem;
+}
+
+.test-button {
+  margin-top: 1rem;
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #4f46e5;
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  transition: background-color 0.3s ease;
+  cursor: pointer;
+}
+
+.test-button:hover {
+  background-color: #4338ca;
+}
+
+.test-error {
+  margin-top: 1rem;
+  color: #dc3545;
+  background-color: #f8d7da;
+  padding: 0.75rem;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.test-quiz {
+  margin-top: 3rem;
+}
+
+.test-quiz h3 {
+  margin-bottom: 1.5rem;
+}
+
+.test-question-card {
+  border-radius: 10px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1rem;
+  background: white;
+}
+
+.test-question-card .card-body {
+  padding: 1.25rem;
+}
+
+.test-question-card .list-group-item {
+  background: transparent;
+  border: none;
+  padding: 0.5rem 1rem;
+}

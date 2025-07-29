@@ -1,0 +1,212 @@
+/* MainPage.css */
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f5f5f5;
+  margin: 0;
+  padding: 20px;
+  color: #333;
+}
+
+h1 {
+  text-align: center;
+  color: #2c3e50;
+}
+
+label {
+  font-weight: 600;
+  display: block;
+  margin-top: 16px;
+}
+
+input[type="text"],
+input[type="number"] {
+  width: 100%;
+  padding: 10px;
+  margin-top: 4px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+.buttons,
+.buttons1 {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.addButton,
+.save-btn,
+.update,
+.cancel,
+.edit-btn,
+.remove-btn,
+.clear-btn {
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.addButton,
+.save-btn {
+  background-color: #28a745;
+  color: white;
+}
+
+.update {
+  background-color: #007bff;
+  color: white;
+}
+
+.cancel {
+  background-color: #6c757d;
+  color: white;
+}
+
+.edit-btn {
+  background-color: #ffc107;
+  margin-right: 8px;
+}
+
+.remove-btn {
+  background-color: #dc3545;
+  color: white;
+}
+
+.clear-btn {
+  background-color: #343a40;
+  color: white;
+  margin: 40px auto 0;
+  display: block;
+}
+
+.editarea {
+    overflow-y: scroll;
+    padding: 1% 30%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 100vw;
+  background: rgba(0, 0, 0, 0.3); /* Dim background */
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9998; /* behind add-question-modal if both are visible */
+}
+
+/* Content box inside the modal */
+.editAreaContents {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  max-width: 600px;
+  width: 90%;
+  position: relative;
+}
+
+
+.questions-list {
+  margin-top: 20px;
+}
+
+.question-item {
+  background-color: white;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 0 6px rgba(0,0,0,0.05);
+  margin-bottom: 16px;
+}
+
+.question-item span {
+  display: inline-block;
+  margin-right: 10px;
+  background: #e9ecef;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+hr {
+  border: 0;
+  border-top: 1px solid #ddd;
+  margin-top: 16px;
+}
+
+.quizcode {
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+}
+
+.code-container {
+  background-color: #fff3cd;
+  border: 1px solid #ffeeba;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  max-width: 400px;
+}
+
+.code-container button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+/* Add Question Modal Overlay */
+.add-question-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 100vw;
+  background: rgba(0, 0, 0, 0.3); /* Dim background */
+  backdrop-filter: blur(4px);     /* Slight blur */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+/* Modal Form Box */
+.add-question-modal form {
+  background-color: white;
+  padding: 32px 24px;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.add-question-modal form h2 {
+  text-align: center;
+  margin-bottom: 16px;
+  color: #2c3e50;
+}
+
+/* Optional close button inside the form */
+.add-question-modal .close-btn {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #888;
+}

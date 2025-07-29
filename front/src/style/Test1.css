@@ -1,0 +1,16 @@
+body{
+
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;  
+    color: #000;
+  }
+  .body{
+    color: #000;
+    width: 100%;
+    /* height: 97vh; */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+*{
+    color: #000;
+}
